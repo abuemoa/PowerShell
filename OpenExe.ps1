@@ -1,6 +1,6 @@
-$nameExe=@(Get-ChildItem | Where-Object -property Name -Like "*.exe")
+$nameExe=@(Get-ChildItem | Where-Object {$_.Name -Like "*.exe"})
 for ($i = 1; $i -lt $nameExe.Count; $i++)
 { 
-    Start-Process -filepath $nameExe.Name[$i] -ArgumentList '/silent', '/install' -Wait
-    Write-output "instalando" $nameExe.Name[$i] "`n"
+    Start-Process -FilePath $nameExe.Name[$i] -ArgumentList '/silent', '/install' -Wait
+    Write-Output "Instalando" $nameExe.Name[$i] "`n"
 } 
