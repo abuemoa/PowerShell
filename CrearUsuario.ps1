@@ -128,7 +128,7 @@ elseif ($forOptions -eq 8) {
 
     try 
     {
-      $TestGroup = (Get-LocalGroupMember -Name $writeGroup -Member $userGroup).Name | %{ $_.Split('\')[1]; } -ErrorAction SilentlyContinue
+      $TestGroup = (Get-LocalGroupMember -Name $writeGroup -Member $userGroup).Name | %{ $_.Split('\')[1]; } -ErrorAction stop
     }
     catch
     {
