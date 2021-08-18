@@ -95,25 +95,51 @@ elseif ($forOptions -eq 6) {
 #Point buttons 7 and 8 are yet to be polished
 
 elseif ($forOptions -eq 7) {
-    Write-Host "Escriba el nombre del grupo`n"
-    (Get-LocalGroup).Name
+$arrayGroup = @((Get-LocalGroup).Name)
+(Get-LocalGroup).Name
+Write-Host "`nEscriba el nombre del grupo`n"
+do
+    {
+    
     $writeGroup = Read-Host 
-    Write-Host "Escriba el usuario que desee añadir`n"
-    (Get-LocalUser).Name
-    $userGroup = Read-Host "`n"
+        if ($arrayGroup -notcontains $writeGroup)
+        {
+            (Get-LocalGroup).Name
+            Write-Host "`nEl grupo $writeGroup no existe. Escriba de nuevo el nombre del grupo`n"
+        }
+    }
+while ($arrayGroup -notcontains $writeGroup)
+
+$arrayUser = @((Get-LocalUser).Name)
+
+(Get-LocalUser).Name
+Write-Host "`nEscriba el nombre del usuario`n"
+do
+    {
+    $user = Read-Host 
+        if ($arrayUser -notcontains $user)
+        {
+            (Get-LocalGroup).Name
+            Write-Host "`nEl usuario $user no existe. Escriba de nuevo el nombre del usuario`n"
+        }
+    }
+while ($arrayUser -notcontains $user)
 
     try 
     {
-      $TestGroup = (Get-LocalGroupMember -Name $writeGroup -Member $user).Name | %{ $_.Split('\')[1]; } -ErrorAction SilentlyContinue
+        (Get-LocalGroupMember -Name $writeGroup -Member $user).Name | %{ $_.Split('\')[1]; } -ErrorAction SilentlyContinue
     }
     catch
     {
         Add-LocalGroupMember -Group $writeGroup -Member $userGroup
+        Write-Host "El usuario $user ha sido añadido al grupo $writeGroup"
     }
 
-    if ($TestGroup -eq $userGroup)
+
+
+    if ($Error.Count -eq 0)
     {
-        Write-Host "El usuario $userGroup ya pertenece al grupo $writeGroup"
+        Write-Host "El usuario $userGroup está en el grupo $writeGroup"
     }
 }
 
