@@ -11,7 +11,8 @@ $forOptions = Read-Host -Prompt "
 7) Añadir un usuario a un grupo
 8) Eliminar un usuario de un grupo
 9) Mostrar todos los usuarios actuales
-10) Mostrar todos los grupos actuales
+0) Mostrar todos los grupos actuales
+a) Mostrar los miembros de un grupo
 Escriba el número`n"
 
 $listUsers = (Get-LocalUser).Name
@@ -125,56 +126,112 @@ do
     }
 while ($arrayUser -notcontains $user)
 
+
+
+  try 
+    {
+        (Get-LocalGroupMember -Name $writeGroup -Member $user).Name | %{ $_.Split('\')[1]; } -ErrorAction SilentlyContinue
+    }
+    catch
+    {
+        Add-LocalGroupMember -Group $writeGroup -Member $user
+        Write-Host "El usuario $user ya está en el grupo $writeGroup"
+    }
+
+    $error.count
+
+    if ($Error.Count -eq 0)
+    {
+        Write-Host "El usuario $user ya está en el grupo $writeGroup"
+    }
+}
+
+
+elseif ($forOptions -eq 8) {
+$arrayGroup = @((Get-LocalGroup).Name)
+(Get-LocalGroup).Name
+Write-Host "`nEscriba el nombre del grupo`n"
+do
+    {
+    
+    $writeGroup = Read-Host 
+        if ($arrayGroup -notcontains $writeGroup)
+        {
+            (Get-LocalGroup).Name
+            Write-Host "`nEl grupo $writeGroup no existe. Escriba de nuevo el nombre del grupo`n"
+        }
+    }
+while ($arrayGroup -notcontains $writeGroup)
+
+$arrayUser = @((Get-LocalUser).Name)
+
+(Get-LocalUser).Name
+Write-Host "`nATENCIÓN, ESTÁ A PUNTO DE ELIMINAR UN USUARIO DE UN GRUPO. ESTO PODRÍA AFECTAR AL CORRECTO FUNCIONAMIENTO DEL SISTEMA.`n
+`nEscriba el nombre del usuario`n"
+do
+    {
+    $user = Read-Host 
+        if ($arrayUser -notcontains $user)
+        {
+            (Get-LocalGroup).Name
+            Write-Host "`nEl usuario $user no existe. Escriba de nuevo el nombre del usuario`n"
+        }
+    }
+while ($arrayUser -notcontains $user)
+
+
+
     try 
     {
         (Get-LocalGroupMember -Name $writeGroup -Member $user).Name | %{ $_.Split('\')[1]; } -ErrorAction SilentlyContinue
     }
     catch
     {
-        Add-LocalGroupMember -Group $writeGroup -Member $userGroup
-        Write-Host "El usuario $user ha sido añadido al grupo $writeGroup"
+        
+        Write-Host "El usuario $user no está en grupo $writeGroup"
     }
 
-
+    $error.count
 
     if ($Error.Count -eq 0)
     {
-        Write-Host "El usuario $userGroup está en el grupo $writeGroup"
+        Remove-LocalGroupMember -Group $writeGroup -Member $user
+        Write-Host "El usuario $user ya no está en el grupo $writeGroup"
     }
 }
 
 
-elseif ($forOptions -eq 8) {
-    Write-Host "Escriba el nombre del grupo`n"
-    (Get-LocalGroup).Name
-    $writeGroup = Read-Host 
-    Write-Host "Escriba el usuario que desee eliminar`n"
-    (Get-LocalUser).Name
-    $userGroup = Read-Host "`n"
-
-    try 
-    {
-      $TestGroup = (Get-LocalGroupMember -Name $writeGroup -Member $userGroup).Name | %{ $_.Split('\')[1]; } -ErrorAction stop
-    }
-    catch
-    {
-        Write-Host "El usuario $userGroup no pertenece al grupo $writeGroup"
-    }
-
-    if ($TestGroup -eq $userGroup)
-    {
-        Remove-LocalGroupMember -Group $writeGroup -Member $userGroup
-        Write-Host "El usuario $userGroup ha sido eliminado del grupo $writeGroup"
-    }
- $TestGroup
- $usergroup
-
-}
 elseif ($forOptions -eq 9) {
     $listUsers
     }
 
-else{
-    Get-Localgroup | Select-Object -Property Name
+elseif ($forOptions -eq 0){
+    (Get-Localgroup).Name
     }
+elseif ($forOptions -eq "a") {
+    $arrayGroup = @((Get-LocalGroup).Name)
+    (Get-LocalGroup).name
+    Write-Host "Seleccione uno de los grupos"
+    do
+    {
+    $writeGroup = Read-Host 
+        if ($arrayGroup -notcontains $writeGroup)
+        {
+            (Get-LocalGroup).Name
+            Write-Host "`nEl grupo $writeGroup no existe. Escriba de nuevo el nombre del grupo`n"
+        }
+        else {
+            Write-Host "`nLos usuarios del grupo $writeGroup son:`n"
+            (Get-LocalGroupMember -Name $writeGroup).Name | %{ $_.Split('\')[1]; }
+        }
+    }
+while ($arrayGroup -notcontains $writeGroup)
+ 
+        
+}
+
+else {
+    Write-Host "Seleccione una de las opciones utilizando los números señalados arriba"
+   
+}
 
