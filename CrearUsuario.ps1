@@ -2,7 +2,7 @@ Write-Host "PROGRAMA PARA ADMINISTRAR USUARIOS LOCALES"
 
 $forOptions = Read-Host -Prompt "
 ¿Qué acción desea realizar?`n
-1) Crear un nuevo usuario
+1) Crear un nuevo usuario o grupo
 2) Renombrar un usuario existente
 3) Cambiar la contraseña
 4) Activar un usuario
@@ -10,14 +10,20 @@ $forOptions = Read-Host -Prompt "
 6) Eliminar un usuario
 7) Añadir un usuario a un grupo
 8) Eliminar un usuario de un grupo
-9) Mostrar todos los grupos y sus miembros
+9) Mostrar todos los grupos con miembros
+0) Mostrar to
 Escriba el número`n"
 
 $listUsers = (Get-LocalUser).Name
+$listGroups = @(Get-LocalGroup).Name
 
 if ($forOptions -eq 1)
 {
-    Write-Host "Muestra de usuarios actuales:`n "
+   $choose = Read-Host "¿Qué quiere añadir, un usuario(u) o un grupo(g)?"
+
+   if ($choose -eq "u")
+   {
+        Write-Host "Muestra de usuarios actuales:`n "
     $listUsers
     $name = Read-Host -prompt "`nEscriba el nombre del nuevo usuario"
     $fullName = Read-Host -Prompt "Escriba el nombre completo"
@@ -41,7 +47,7 @@ if ($forOptions -eq 1)
         else {
         New-LocalUser -Name $name -FullName $fullName -Password $passwd -Description $description -AccountNeverExpires -PasswordNeverExpires -Verbose 
     }
-    $prompGroup = Read-Host "¿Quiere añadir el usuario a algún grupo? Sí(s), No(n)"
+    $prompGroup = Read-Host -Prompt "¿Quiere añadir el usuario a algún grupo? Sí(s), No(n)"
         if ($promptGroup = "s")
         {
             Write-Host "Escriba uno de los siguientes grupos`n"
@@ -49,6 +55,59 @@ if ($forOptions -eq 1)
             $writeGroup = Read-Host 
             Add-LocalGroupMember -Name $writeGroup -Member $name
         }
+   }
+   else 
+   {
+    Write-Host "Muestra de grupos actuales:`n"
+    (Get-LocalGroup).Name
+    $group = Read-Host -Prompt "`nEscriba el nombre del nuevo grupo"
+    if ($listGroups -contains $group)
+    {
+         do
+        {
+            $group = Read-Host "`nEl grupo $group ya existe, escríbalo de nuevo`n"
+        }
+        while ($listGroups -contains $group)
+    }
+       
+    $Description = Read-Host -Prompt "Escriba la descripción del grupo"
+    New-LocalGroup -Name $group -Description $description
+    $addUser = Read-Host "¿Quiere añadir usuarios al nuevo grupo?, Sí(s), No(n)"
+<#
+        if ($addUser -eq "s")
+        {
+            do
+            {
+                $user = Read-Host "Escriba el nombre de usuario`nPara dejar de añadir usuarios, presione intro"
+                if ($listUser -contains $user)
+                {
+                    Add-LocalGroupMember -Group $group -Member $user
+                }
+                else 
+                {
+                    if ($user -eq  [string]::IsNullOrEmpty)
+                    {
+                        
+                    }
+                    else {
+                    New-LocalUser -Name $user
+                    Add-LocalGroupMember -Group $group -Member $user
+                    }
+                }
+                
+            }
+            while ($user -ne [string]::IsNullOrEmpty($user))
+        }
+
+
+        else
+        {
+            Write-Host "El grupo $group ya ha sido creado"
+        }
+#>
+
+   }
+    
 }
 
 
@@ -90,8 +149,6 @@ elseif ($forOptions -eq 6) {
             Write-Host "`nEliminación del usuario $deleteuser cancelada por el usuario"
             }
 }
-
-#Point buttons 7 and 8 are yet to be polished
 
 elseif ($forOptions -eq 7) {
 $arrayGroup = @((Get-LocalGroup).Name)
@@ -138,8 +195,6 @@ else {
 }
 }
 
-
-
 elseif ($forOptions -eq 8) {
 $arrayGroup = @((Get-LocalGroup).Name)
 (Get-LocalGroup).Name
@@ -184,7 +239,6 @@ else {
 
 }
 
-
 elseif ($forOptions -eq 9) {
    
 $arrayGroup = @((Get-LocalGroup).Name)
@@ -211,3 +265,8 @@ else {
 }
 
 
+
+for ($i = 0; $i -lt $arraygrupo.Count; $i++)
+{ 
+    Remove-LocalGroup -name $arraygrupo[$i]
+}
