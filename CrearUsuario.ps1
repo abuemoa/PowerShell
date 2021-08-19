@@ -10,9 +10,7 @@ $forOptions = Read-Host -Prompt "
 6) Eliminar un usuario
 7) Añadir un usuario a un grupo
 8) Eliminar un usuario de un grupo
-9) Mostrar todos los usuarios actuales
-0) Mostrar todos los grupos actuales
-a) Mostrar los miembros de un grupo
+9) Mostrar todos los grupos y sus miembros
 Escriba el número`n"
 
 $listUsers = (Get-LocalUser).Name
@@ -127,24 +125,19 @@ do
 while ($arrayUser -notcontains $user)
 
 
+$conditionGroup = @((Get-LocalGroupMember -Group $writeGroup).Name | %{ $_.Split('\')[1]; })
 
-  try 
-    {
-        (Get-LocalGroupMember -Name $writeGroup -Member $user).Name | %{ $_.Split('\')[1]; } -ErrorAction SilentlyContinue
-    }
-    catch
-    {
-        Add-LocalGroupMember -Group $writeGroup -Member $user
-        Write-Host "El usuario $user ya está en el grupo $writeGroup"
-    }
 
-    $error.count
+if ($conditionGroup -contains $user) {
+    Write-Host "El usuario $user no se encuentra en el grupo $writeGroup y por ello no será añadido"
 
-    if ($Error.Count -eq 0)
-    {
-        Write-Host "El usuario $user ya está en el grupo $writeGroup"
-    }
 }
+else {
+    Add-LocalGroupMember -Group $writeGroup -Member $user
+    Write-Host "Usuario $user ha sido añadido al grupo $writeGroup"
+}
+}
+
 
 
 elseif ($forOptions -eq 8) {
@@ -153,7 +146,6 @@ $arrayGroup = @((Get-LocalGroup).Name)
 Write-Host "`nEscriba el nombre del grupo`n"
 do
     {
-    
     $writeGroup = Read-Host 
         if ($arrayGroup -notcontains $writeGroup)
         {
@@ -179,59 +171,43 @@ do
     }
 while ($arrayUser -notcontains $user)
 
+$conditionGroup = @((Get-LocalGroupMember -Group $writeGroup).Name | %{ $_.Split('\')[1]; })
 
 
-    try 
-    {
-        (Get-LocalGroupMember -Name $writeGroup -Member $user).Name | %{ $_.Split('\')[1]; } -ErrorAction SilentlyContinue
-    }
-    catch
-    {
-        
-        Write-Host "El usuario $user no está en grupo $writeGroup"
-    }
+if ($conditionGroup -contains $user) {
+    Remove-LocalGroupMember -Group $writeGroup -Member $user
+    Write-Host "Usuario $user eliminado del grupo $writeGroup"
+}
+else {
+    Write-Host "El usuario $user no se encuentra en el grupo $writeGroup y por ello no será eliminado"
+}
 
-    $error.count
-
-    if ($Error.Count -eq 0)
-    {
-        Remove-LocalGroupMember -Group $writeGroup -Member $user
-        Write-Host "El usuario $user ya no está en el grupo $writeGroup"
-    }
 }
 
 
 elseif ($forOptions -eq 9) {
-    $listUsers
-    }
+   
+$arrayGroup = @((Get-LocalGroup).Name)
 
-elseif ($forOptions -eq 0){
-    (Get-Localgroup).Name
-    }
-elseif ($forOptions -eq "a") {
-    $arrayGroup = @((Get-LocalGroup).Name)
-    (Get-LocalGroup).name
-    Write-Host "Seleccione uno de los grupos"
-    do
-    {
-    $writeGroup = Read-Host 
-        if ($arrayGroup -notcontains $writeGroup)
-        {
-            (Get-LocalGroup).Name
-            Write-Host "`nEl grupo $writeGroup no existe. Escriba de nuevo el nombre del grupo`n"
-        }
-        else {
-            Write-Host "`nLos usuarios del grupo $writeGroup son:`n"
-            (Get-LocalGroupMember -Name $writeGroup).Name | %{ $_.Split('\')[1]; }
-        }
-    }
-while ($arrayGroup -notcontains $writeGroup)
+for ($i = 0; $i -lt $arrayGroup.Count; $i++)
+{ 
+
+if ([string]::IsNullOrEmpty((Get-LocalGroupMember -Group $arrayGroup[$i]).Name))
+{
  
-        
+}
+else { 
+
+    Write-host -ForegroundColor Green "`nGrupo" $arrayGroup[$i] 
+    (Get-LocalGroupMember -Group $arrayGroup[$i]).Name | %{ $_.Split('\')[1]; }
+}
+}
+
 }
 
 else {
     Write-Host "Seleccione una de las opciones utilizando los números señalados arriba"
    
 }
+
 
